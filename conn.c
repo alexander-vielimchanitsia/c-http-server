@@ -8,12 +8,10 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "queue.h"
-
-
-#define PORT 8080
-#define MAX_PENDING_CONN 10
+#include "conn.h"
 
 
 void setup_conn(queue_t *queue)
@@ -52,6 +50,6 @@ void setup_conn(queue_t *queue)
             perror("Failed to accept a new connection");
             exit(EXIT_FAILURE);
         }
-        queue_put(queue, (void *)&new_connection);
+        queue_push(queue, (void *)&new_connection);
     }
 }
