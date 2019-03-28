@@ -1,17 +1,18 @@
+#include <assert.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../queue.h"
+
+
+const static char *TEST_ITEM = "test1";
 
 
 void push_test_item(queue_t *q)
 {
-    char str[] = "test1";
-    char *data = malloc(strlen(str));
-    strcpy(data, str);
     printf("start pushing\n");
-    queue_push(q, data);
-    printf("pushed: %s\n", data);
+    queue_push(q, (void *)TEST_ITEM);
+    printf("pushed: %s\n", TEST_ITEM);
 }
 
 void pop_test_item(queue_t *q)
@@ -20,6 +21,7 @@ void pop_test_item(queue_t *q)
     printf("start popping\n");
     queue_pop(q, item);
     printf("popped: %s\n", item);
+    assert(!strcmp(TEST_ITEM, item));
 }
 
 int main()
