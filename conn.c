@@ -29,7 +29,8 @@ void setup_conn(queue_t *queue)
     int addrlen = sizeof(address);
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    memset(address.sin_zero, '\0', sizeof address.sin_zero);
+    address.sin_port = htons(PORT);
+    memset(address.sin_zero, 0, sizeof address.sin_zero);
 
     if (bind(server_fd, (struct sockaddr *)&address, addrlen) < 0)
     {
@@ -46,7 +47,7 @@ void setup_conn(queue_t *queue)
     int new_connection;
     while (1)
     {
-        printf("start accepting connections...\n");
+        printf("starting to accept connections...\n");
         if ((new_connection = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
         {
             perror("Failed to accept a new connection");
