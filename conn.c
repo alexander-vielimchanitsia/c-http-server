@@ -6,6 +6,7 @@
  */
 
 #include <netinet/in.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <stdlib.h>
@@ -45,6 +46,7 @@ void setup_conn(queue_t *queue)
     int new_connection;
     while (1)
     {
+        printf("start accepting connections...\n");
         if ((new_connection = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
         {
             perror("Failed to accept a new connection");
@@ -52,4 +54,11 @@ void setup_conn(queue_t *queue)
         }
         queue_push(queue, (void *)&new_connection);
     }
+}
+
+pthread_t *start_accept_connections(queue_t *queue)
+{
+    pthread_t *thread = malloc(sizeof(pthread_t));
+    pthread_create(thread, NULL, (void *)&setup_conn, (void *)queue);
+    return thread;
 }

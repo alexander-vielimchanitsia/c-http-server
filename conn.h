@@ -8,6 +8,6 @@
 #define MAX_PENDING_CONN 10
 
 
-void setup_conn(queue_t *queue);
+pthread_t *start_accept_connections(queue_t *queue);
 
 #endif
