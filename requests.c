@@ -23,8 +23,7 @@ void start_handle_connections(queue_t *conn_queue)
 {
     // start workers
     pthread_t workers[WORKERS_NUM];
-    int i;
-    for (i = 0; i < WORKERS_NUM; i++)
+    for (int i = 0; i < WORKERS_NUM; i++)
         pthread_create(&workers[i], NULL, (void *)&handle_connection, (void *)conn_queue);
 }
 
@@ -54,8 +53,60 @@ void read_stream(int conn, char *buf)
     }
 }
 
+// TODO: move to utils.c?
+/**
+ * (s="GET / HTTP/1.1\r\n", delim=" ") -> returns "GET", s="/ HTTP/1.1\r\n"
+ */
+char *get_next_http_value(char **s, char *delim)
+{
+    char *value = *s;
+    char *end = *s + strcspn(*s, delim);  // "GET / HTTP" -> " / HTTP"
+    if (*end)
+        *end++ = '\0';
+    *s = end;
+    return value;
+}
+
 request_t *parse_request(char *raw)
 {
     request_t *request = calloc(1, sizeof(request_t));
+    if (!request) {
+        printf("Failed to allocate request_t");
+        return NULL;
+    }
+
+    // method
+    char *method = get_next_http_value(&raw, " ");
+    if (strcmp(method, "GET") == 0)
+        request->method = M_GET;
+    else if (strcmp(method, "POST") == 0)
+        request->method = M_POST;
+    else
+        request->method = M_UNKNOWN;
+    printf("method: '%d' | raw: '%s'\n", request->method, raw);
+
+    // path
+
+    // protocol
+
+    // headers
+
+    // body
+
     return request;
+}
+
+header_t *parser_headers()
+{
+    return NULL;
+}
+
+void free_request(request_t *request)
+{
+
+}
+
+void free_header(header_t *header)
+{
+
 }
