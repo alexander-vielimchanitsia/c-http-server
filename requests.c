@@ -63,8 +63,10 @@ char *get_next_http_value(char **s, char *delim)
 {
     char *value = *s;
     char *end = *s + strcspn(*s, delim);  // "GET / HTTP" -> " / HTTP"
-    if (*end)
+    if (*end) {
         *end++ = '\0';
+        end += strspn(end, delim);
+    }
     *s = end;
     return value;
 }
@@ -103,6 +105,7 @@ request_t *parse_request(char *raw)
     printf("protocol: '%s'\n", request->proto);
  
     // headers
+    printf("row: '%s'\n", raw);
 
     // body
 
