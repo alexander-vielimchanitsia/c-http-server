@@ -55,6 +55,8 @@ void read_stream(int conn, char *buf)
 
 // TODO: move to utils.c?
 /**
+ * !! Returns a pointer to a char into `*s` char array, NOT A NEW ARRAY
+ * !! Sets a null-value into the place of `*delim` in the `*s` char array
  * (s="GET / HTTP/1.1\r\n", delim=" ") -> returns "GET", s="/ HTTP/1.1\r\n"
  */
 char *get_next_http_value(char **s, char *delim)
@@ -75,6 +77,8 @@ request_t *parse_request(char *raw)
         return NULL;
     }
 
+    // TODO: add check validation (like whether there're all required fileds)
+
     // method
     char *method = get_next_http_value(&raw, " ");
     if (strcmp(method, "GET") == 0)
@@ -86,9 +90,18 @@ request_t *parse_request(char *raw)
     printf("method: '%d' | raw: '%s'\n", request->method, raw);
 
     // path
+    char *path = get_next_http_value(&raw, " ");
+    request->url = calloc(1, sizeof(url_t));
+    request->url->path = malloc(strlen(path));
+    strcpy(request->url->path, path);
+    printf("path: '%s'\n", request->url->path);
 
     // protocol
-
+    char *proto = get_next_http_value(&raw, "\r\n");
+    request->proto = malloc(strlen(proto));
+    strcpy(request->proto, proto);
+    printf("protocol: '%s'\n", request->proto);
+ 
     // headers
 
     // body

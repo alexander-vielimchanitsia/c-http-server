@@ -23,6 +23,7 @@ typedef struct Request {
     header_t *headers;
     url_t *url;
     char *body;
+    char *proto;
 } request_t;
 
 
