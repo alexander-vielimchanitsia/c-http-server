@@ -65,7 +65,11 @@ char *get_next_http_value(char **s, char *delim)
     char *end = *s + strcspn(*s, delim);  // "GET / HTTP" -> " / HTTP"
     if (*end) {
         *end++ = '\0';
-        end += strspn(end, delim);
+        // FIXME: write own implementation of this function for correct behavior
+        // FIXME: do not need to skip miltiple delimetrs that are together
+        // FIXME: the correct behavior is MIN((strlen(delim)-1), strspn(end, delim)) but it is not optimized one
+        // end += strspn(end, delim);
+        end += strlen(delim)-1;
     }
     *s = end;
     return value;
@@ -105,16 +109,44 @@ request_t *parse_request(char *raw)
     printf("protocol: '%s'\n", request->proto);
  
     // headers
-    printf("row: '%s'\n", raw);
+    request->headers = parse_headers(&raw);
+    printf("headers:\n");
+    for (header_t *h = request->headers; h; h = h->next)
+        printf("'%s': '%s'\n", h->name, h->value);
 
     // body
+    printf("raw: %s\n", raw);
+    // TODO: add it later
 
     return request;
 }
 
-header_t *parser_headers()
+header_t *parse_headers(char **rawp)
 {
-    return NULL;
+    char *name, *value;
+    header_t *header = NULL;
+    header_t *prev_header = NULL;
+    while (**rawp != '\r' && **rawp != '\n'
+        && *(name = get_next_http_value(rawp, ": ")))
+    {
+        value = get_next_http_value(rawp, "\r\n");
+        if (*value) {
+            prev_header = header;
+            header = malloc(sizeof(header_t));
+            header->next = prev_header;
+
+            header->name = malloc(sizeof(name));
+            strcpy(header->name, name);
+            header->value = malloc(sizeof(value));
+            strcpy(header->value, value);
+        } else {
+            // TODO: ?
+            // free_request() ?
+            // free_header() ?
+            continue;
+        }
+    }
+    return header;
 }
 
 void free_request(request_t *request)
