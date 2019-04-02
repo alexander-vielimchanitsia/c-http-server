@@ -14,7 +14,7 @@
 #include "read_static_page.h"
 
 
-#define TEMPLATES './templates'
+#define TEMPLATES "./templates"
 #define MAX_FILE_LENGTH 65536  // 64K
 
 
