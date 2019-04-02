@@ -19,27 +19,40 @@
 #define MAX_REQUEST_BUF 65536  // 64K
 
 
-void start_handle_connections(queue_t *conn_queue)
+void start_handle_connections(queue_t *conn_queue, queue_t *rsp_queue, queue_t *gdp_queue)
 {
     // start workers
     pthread_t workers[WORKERS_NUM];
+    worker_args_t *args = malloc(sizeof(worker_args_t));
+    args->conn_queue = conn_queue;
+    args->gdp_queue = gdp_queue;
+    args->rsp_queue = rsp_queue;
     for (int i = 0; i < WORKERS_NUM; i++)
-        pthread_create(&workers[i], NULL, (void *)&handle_connection, (void *)conn_queue);
+        pthread_create(&workers[i], NULL, (void *)&handle_connection, (void *)args);
 }
 
 /* Worker */
-void handle_connection(queue_t *conn_queue)
+void handle_connection(worker_args_t *args)
 {
     int *connection;
     char request_buf[MAX_REQUEST_BUF];
     while (1) {
         printf("wait for a connection\n");
-        queue_pop(conn_queue, connection);
+        queue_pop(args->conn_queue, connection);
         printf("got a connection: %d\n", *connection);
         read_stream(*connection, request_buf);
         printf("buffer: %s\n", request_buf);
         request_t *request = parse_request(request_buf);
-        close(*connection);
+        if (request) {
+            // TODO: try to get the page from the cache
+            // page = cache_get(request);
+            request_msg_t *msg = malloc(sizeof(request_msg_t));
+            msg->conn_queue = args->conn_queue;
+            msg->request = request;
+            // TODO: push to gdp_queue for dynamic pages
+            queue_push(args->rsp_queue, msg);
+        } else
+            close(*connection);
     }
 }
 
