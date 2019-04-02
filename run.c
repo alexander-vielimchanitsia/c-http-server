@@ -21,6 +21,7 @@ int main(int argc, char const *argv[])
     queue_t *rsp_queue = queue_init(MAX_RSP_QUEUE_ITEMS);
     queue_t *resp_queue = queue_init(MAX_RESP_QUEUE_ITEMS);
 
+    // stages start up
     pthread_t *conn_thread = start_accept_connections(conn_queue);
     start_handle_connections(conn_queue, rsp_queue, gdp_queue);
     start_process_read_static_pages(rsp_queue);
