@@ -1,3 +1,4 @@
+#include <string.h>
 #include "utils.h"
 
 /*
@@ -5,5 +6,7 @@
  */
 void path_combine(char *dest, char *path1, char *path2)
 {
-
+    // TODO: make it stable
+    strcpy(dest, path1);
+    strcat(dest, path2);
 }

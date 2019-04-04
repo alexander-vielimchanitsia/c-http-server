@@ -12,8 +12,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+
 #include "queue.h"
 #include "requests.h"
+
 
 #define WORKERS_NUM 4
 #define MAX_REQUEST_BUF 65536  // 64K
@@ -23,7 +25,7 @@ void start_handle_connections(queue_t *conn_queue, queue_t *rsp_queue, queue_t *
 {
     // start workers
     pthread_t workers[WORKERS_NUM];
-    worker_args_t *args = malloc(sizeof(worker_args_t));
+    req_worker_args_t *args = malloc(sizeof(req_worker_args_t));
     args->conn_queue = conn_queue;
     args->gdp_queue = gdp_queue;
     args->rsp_queue = rsp_queue;
@@ -32,7 +34,7 @@ void start_handle_connections(queue_t *conn_queue, queue_t *rsp_queue, queue_t *
 }
 
 /* Worker */
-void handle_connection(worker_args_t *args)
+void handle_connection(req_worker_args_t *args)
 {
     int *connection;
     char request_buf[MAX_REQUEST_BUF];
@@ -41,13 +43,13 @@ void handle_connection(worker_args_t *args)
         queue_pop(args->conn_queue, connection);
         printf("got a connection: %d\n", *connection);
         read_stream(*connection, request_buf);
-        printf("buffer: %s\n", request_buf);
+        printf("request: %s\n", request_buf);
         request_t *request = parse_request(request_buf);
         if (request) {
             // TODO: try to get the page from the cache
             // page = cache_get(request);
             request_msg_t *msg = malloc(sizeof(request_msg_t));
-            msg->conn_queue = args->conn_queue;
+            msg->connection = connection;
             msg->request = request;
             // TODO: push to gdp_queue for dynamic pages
             queue_push(args->rsp_queue, msg);
@@ -106,29 +108,29 @@ request_t *parse_request(char *raw)
         request->method = M_POST;
     else
         request->method = M_UNKNOWN;
-    printf("method: '%d' | raw: '%s'\n", request->method, raw);
+    // printf("method: '%d' | raw: '%s'\n", request->method, raw);
 
     // path
     char *path = get_next_http_value(&raw, " ");
     request->url = calloc(1, sizeof(url_t));
     request->url->path = malloc(strlen(path));
     strcpy(request->url->path, path);
-    printf("path: '%s'\n", request->url->path);
+    // printf("path: '%s'\n", request->url->path);
 
     // protocol
     char *proto = get_next_http_value(&raw, "\r\n");
     request->proto = malloc(strlen(proto));
     strcpy(request->proto, proto);
-    printf("protocol: '%s'\n", request->proto);
+    // printf("protocol: '%s'\n", request->proto);
  
     // headers
     request->headers = parse_headers(&raw);
-    printf("headers:\n");
+    // printf("headers:\n");
     for (header_t *h = request->headers; h; h = h->next)
         printf("'%s': '%s'\n", h->name, h->value);
 
     // body
-    printf("raw: %s\n", raw);
+    // printf("raw: %s\n", raw);
     // TODO: add it later
 
     return request;

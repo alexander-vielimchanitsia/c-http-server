@@ -1,15 +1,11 @@
 #ifndef _REQUESTS_H_
 #define _REQUESTS_H_
 
+#include "common_http.h"
 #include "queue.h"
 
-enum Method { M_UNKNOWN, M_GET, M_POST };
 
-typedef struct Header {
-    char *name;
-    char *value;
-    struct Header *next;
-} header_t;
+enum Method { M_UNKNOWN, M_GET, M_POST };
 
 typedef struct Url {
     char *protocol;
@@ -27,18 +23,18 @@ typedef struct Request {
 } request_t;
 
 typedef struct RequestMsg {
-    queue_t *conn_queue;
+    int *connection;
     request_t *request;
 } request_msg_t;
 
-typedef struct WorkerArgs {
+typedef struct RequestWorkerArgs {
     queue_t *conn_queue;
     queue_t *rsp_queue;
     queue_t *gdp_queue;
-} worker_args_t;
+} req_worker_args_t;
 
 void start_handle_connections(queue_t *conn_queue, queue_t *rsp_queue, queue_t *gdp_queue);
-void handle_connection(worker_args_t *args);
+void handle_connection(req_worker_args_t *args);
 void read_stream(int conn, char *buf);
 request_t *parse_request(char *raw);
 header_t *parse_headers(char **rawp);

@@ -24,7 +24,7 @@ int main(int argc, char const *argv[])
     // stages start up
     pthread_t *conn_thread = start_accept_connections(conn_queue);
     start_handle_connections(conn_queue, rsp_queue, gdp_queue);
-    start_process_read_static_pages(rsp_queue);
+    start_process_read_static_pages(rsp_queue, resp_queue);
     start_process_send_pages(resp_queue);
 
     pthread_join(*conn_thread, NULL);
