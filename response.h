@@ -3,6 +3,7 @@
 
 #include "common_http.h"
 
+#define MAX_RESPONSE_LENGTH 65536  // 64K
 
 typedef struct Response {
     char *proto;
@@ -10,5 +11,14 @@ typedef struct Response {
     header_t *headers;
     char *body;
 } response_t;
+
+typedef struct ResponseMsg {
+    int *connection;
+    response_t *response;
+} response_msg_t;
+
+void response_to_string(response_t *response, char *buf);
+void free_response(response_t *response);
+const char *get_status_text(short int status_code);
 
 #endif

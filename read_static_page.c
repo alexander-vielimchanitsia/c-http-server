@@ -37,24 +37,37 @@ void read_static_pages(rsp_worker_args_t *args)
     response_t *response;
     char file_content[MAX_FILE_LENGTH];
     request_msg_t *msg;
-    while (1) {
+    while (1)
+    {
         queue_pop(args->rsp_queue, msg);
         response = malloc(sizeof(response_t));
         printf("msg: %s\n", msg->request->url->path);
-        read_file(msg->request->url->path, file_content);
+        ssize_t content_length = read_file(msg->request->url->path, file_content);
+        if (content_length < 0)
+        {
+            printf("Failed to read file for url='%s'\n", msg->request->url->path);
+            // TODO: send 500 status instead
+            close(*msg->connection);
+            free_response(response);
+            continue;
+        }
         printf("file content: %s\n", file_content);
+        free_request(msg->request);
+        free(msg);
         // remove it
         close(*msg->connection);
     }
 }
 
-void read_file(char *path, char *buf)
+ssize_t read_file(char *url_path, char *buf)
 {
     // get the file path
-    char file_path[strlen(TEMPLATES) + strlen(path) + 1];
-    path_combine(file_path, TEMPLATES, path);
+    char file_path[strlen(TEMPLATES) + strlen(url_path) + 1];
+    path_combine(file_path, TEMPLATES, url_path);
     // read the file
     int file = open(file_path, O_RDONLY);
-    read(file, buf, MAX_FILE_LENGTH);
+    ssize_t bytes_read = read(file, buf, MAX_FILE_LENGTH);
     close(file);
+    printf("bytes_read: %lu, len: %lu\n", bytes_read, strlen(buf));
+    return bytes_read;
 }

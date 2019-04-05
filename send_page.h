@@ -5,5 +5,7 @@
 
 
 void start_process_send_pages(queue_t *resp_queue);
+void send_pages(queue_t *resp_queue);
+void send_response(response_t *response);
 
 #endif

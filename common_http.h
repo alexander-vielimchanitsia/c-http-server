@@ -7,4 +7,6 @@ typedef struct Header {
     struct Header *next;
 } header_t;
 
+void free_header(header_t *header);
+
 #endif

@@ -10,6 +10,6 @@ typedef struct RSPWorkerArgs {
 
 void start_process_read_static_pages(queue_t *rsp_queue, queue_t *resp_queue);
 void read_static_pages(rsp_worker_args_t *args);
-void read_file(char *path, char *buf);
+ssize_t read_file(char *url_path, char *buf);
 
 #endif

@@ -166,10 +166,18 @@ header_t *parse_headers(char **rawp)
 
 void free_request(request_t *request)
 {
-
+    free(request->proto);
+    free(request->body);
+    free_url(request->url);
+    free_header(request->headers);
+    free(request);
 }
 
-void free_header(header_t *header)
+void free_url(url_t *url)
 {
-
+    free(url->protocol);
+    free(url->host);
+    // free(url->port);
+    free(url->path);
+    free(url);
 }
