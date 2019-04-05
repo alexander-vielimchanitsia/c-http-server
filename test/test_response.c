@@ -1,5 +1,7 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../response.h"
 
@@ -27,5 +29,12 @@ int main()
     char response_string[MAX_RESPONSE_LENGTH];
     response_to_string(response, response_string);
     printf("response: '%s'\n", response_string);
+    char *expected = "HTTP/1.1 200 OK\r\n"
+                     "Connection: Keep-Alive\r\n"
+                     "Content-Length: 111\r\n"
+                     "Content-Type: text/html\r\n"
+                     "\r\n"
+                     "<html><body><h1>Some text</h1></body></html>";
+    assert(!strcmp(response_string, expected));
     return 0;
 }
