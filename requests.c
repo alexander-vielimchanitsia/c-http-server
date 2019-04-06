@@ -113,13 +113,13 @@ request_t *parse_request(char *raw)
     // path
     char *path = get_next_http_value(&raw, " ");
     request->url = calloc(1, sizeof(url_t));
-    request->url->path = malloc(strlen(path));
+    request->url->path = malloc(strlen(path)+1);
     strcpy(request->url->path, path);
     // printf("path: '%s'\n", request->url->path);
 
     // protocol
     char *proto = get_next_http_value(&raw, "\r\n");
-    request->proto = malloc(strlen(proto));
+    request->proto = malloc(strlen(proto)+1);
     strcpy(request->proto, proto);
     // printf("protocol: '%s'\n", request->proto);
  

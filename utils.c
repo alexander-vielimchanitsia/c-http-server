@@ -21,6 +21,7 @@ void reverse(char *s)
     }
 }
 
+/* convests int to string */
 void itoa(int n, char *s)
 {
     int i, sign;
