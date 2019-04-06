@@ -24,11 +24,11 @@
 void start_process_read_static_pages(queue_t *rsp_queue, queue_t *resp_queue)
 {
     // TODO: split the work by more threads?
-    pthread_t *thread;
+    pthread_t *thread = malloc(sizeof(pthread_t));
     rsp_worker_args_t *args = malloc(sizeof(rsp_worker_args_t));
     args->rsp_queue = rsp_queue;
     args->resp_queue = resp_queue;
-    pthread_create(thread, NULL, (void *)&read_static_pages, (void *)args);
+    pthread_create(thread, NULL, (void *)&read_static_pages, args);
 }
 
 /* Worker */
@@ -36,26 +36,27 @@ void read_static_pages(rsp_worker_args_t *args)
 {
     response_t *response;
     char file_content[MAX_FILE_LENGTH];
-    request_msg_t *msg;
+    response_msg_t *resp_msg;
+    request_msg_t *req_msg;
     while (1)
     {
-        queue_pop(args->rsp_queue, msg);
-        response = malloc(sizeof(response_t));
-        printf("msg: %s\n", msg->request->url->path);
-        ssize_t content_length = read_file(msg->request->url->path, file_content);
-        if (content_length < 0)
+        queue_pop(args->rsp_queue, req_msg);
+        printf("req_msg: %s\n", req_msg->request->url->path);
+        ssize_t file_length = read_file(req_msg->request->url->path, file_content);
+        if (file_length < 0)
         {
-            printf("Failed to read file for url='%s'\n", msg->request->url->path);
+            printf("Failed to read file for url='%s'\n", req_msg->request->url->path);
             // TODO: send 500 status instead
-            close(*msg->connection);
-            free_response(response);
+            close(*req_msg->connection);
             continue;
         }
-        printf("file content: %s\n", file_content);
-        free_request(msg->request);
-        free(msg);
-        // remove it
-        close(*msg->connection);
+        response = create_response(req_msg->request->proto, file_content, file_length);
+        resp_msg = malloc(sizeof(response_msg_t));
+        resp_msg->connection = req_msg->connection;
+        resp_msg->response = response;
+        queue_push(args->resp_queue, resp_msg);
+        free_request(req_msg->request);
+        free(req_msg);
     }
 }
 
@@ -68,6 +69,5 @@ ssize_t read_file(char *url_path, char *buf)
     int file = open(file_path, O_RDONLY);
     ssize_t bytes_read = read(file, buf, MAX_FILE_LENGTH);
     close(file);
-    printf("bytes_read: %lu, len: %lu\n", bytes_read, strlen(buf));
     return bytes_read;
 }

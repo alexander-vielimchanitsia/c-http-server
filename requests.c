@@ -126,8 +126,8 @@ request_t *parse_request(char *raw)
     // headers
     request->headers = parse_headers(&raw);
     // printf("headers:\n");
-    for (header_t *h = request->headers; h; h = h->next)
-        printf("'%s': '%s'\n", h->name, h->value);
+    // for (header_t *h = request->headers; h; h = h->next)
+    //     printf("'%s': '%s'\n", h->name, h->value);
 
     // body
     // printf("raw: %s\n", raw);
