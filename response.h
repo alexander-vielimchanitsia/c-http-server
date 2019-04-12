@@ -18,11 +18,13 @@ typedef struct ResponseMsg {
     response_t *response;
 } response_msg_t;
 
+const char *get_status_text(short int status_code);
 response_t *create_response(const char *proto, const char *body, int file_length, const char *mime);
 response_t *create_404_response(request_t *request);
 response_t *create_500_response(request_t *request);
+response_msg_t *create_response_msg(response_t *response, int *connection);
 void response_to_string(response_t *response, char *buf);
 void free_response(response_t *response);
-const char *get_status_text(short int status_code);
+void free_response_msg(response_msg_t *msg);
 
 #endif

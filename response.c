@@ -95,3 +95,19 @@ void free_response(response_t *response)
     free_header(response->headers);
     free(response);
 }
+
+response_msg_t *create_response_msg(response_t *response, int *connection)
+{
+    response_msg_t *msg = malloc(sizeof(response_msg_t));
+    msg->connection = connection;
+    msg->response = response;
+    return msg;
+}
+
+void free_response_msg(response_msg_t *msg)
+{
+    free_response(msg->response);
+    // free(msg->connection);
+    free(msg);
+}
+

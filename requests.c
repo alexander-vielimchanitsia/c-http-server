@@ -48,9 +48,7 @@ void handle_connection(req_worker_args_t *args)
         if (request) {
             // TODO: try to get the page from the cache
             // page = cache_get(request);
-            request_msg_t *msg = malloc(sizeof(request_msg_t));
-            msg->connection = connection;
-            msg->request = request;
+            request_msg_t *msg = create_request_msg(request, connection);
             // TODO: push to gdp_queue for dynamic pages
             queue_push(args->rsp_queue, msg);
         } else {
@@ -101,7 +99,6 @@ request_t *parse_request(char *raw)
     }
 
     // TODO: add check validation (like whether there're all required fileds)
-
     // method
     char *method = get_next_http_value(&raw, " ");
     if (strcmp(method, "GET") == 0)
@@ -111,7 +108,6 @@ request_t *parse_request(char *raw)
     else
         request->method = M_UNKNOWN;
     // printf("method: '%d' | raw: '%s'\n", request->method, raw);
-
     // path
     char *path = get_next_http_value(&raw, " ");
     request->url = calloc(1, sizeof(url_t));
@@ -142,20 +138,16 @@ header_t *parse_headers(char **rawp)
 {
     char *name, *value;
     header_t *header = NULL;
-    header_t *prev_header = NULL;
     while (**rawp != '\r' && **rawp != '\n'
         && *(name = get_next_http_value(rawp, ": ")))
     {
         value = get_next_http_value(rawp, "\r\n");
         if (*value) {
-            prev_header = header;
-            header = malloc(sizeof(header_t));
-            header->next = prev_header;
-
-            header->name = malloc(sizeof(name));
-            strcpy(header->name, name);
-            header->value = malloc(sizeof(value));
-            strcpy(header->value, value);
+            header = create_header(name, value, header);
+            if (!header) {
+                printf("parse_headers: failed to create header for '%s: %s'", name, value);
+                break;
+            }
         } else {
             // TODO: ?
             // free_request() ?
@@ -182,4 +174,19 @@ void free_url(url_t *url)
     // free(url->port);
     free(url->path);
     free(url);
+}
+
+request_msg_t *create_request_msg(request_t *request, int *connection)
+{
+    request_msg_t *msg = malloc(sizeof(request_msg_t));
+    msg->connection = connection;
+    msg->request = request;
+    return msg;
+}
+
+void free_request_msg(request_msg_t *msg)
+{
+    free_request(msg->request);
+    // free(msg->connection);
+    free(msg);
 }

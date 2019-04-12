@@ -40,6 +40,8 @@ request_t *parse_request(char *raw);
 header_t *parse_headers(char **rawp);
 void free_request(request_t *request);
 void free_url(url_t *url);
+request_msg_t *create_request_msg(request_t *request, int *connection);
+void free_request_msg(request_msg_t *msg);
 
 
 #endif

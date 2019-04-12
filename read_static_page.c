@@ -51,6 +51,7 @@ void read_static_pages(rsp_worker_args_t *args)
         if (access(filepath, F_OK) < 0) {
             response = create_404_response(req_msg->request);
             push_response(args->resp_queue, req_msg->connection, response);
+            free_request_msg(req_msg);
             continue;
         }
 
@@ -62,17 +63,14 @@ void read_static_pages(rsp_worker_args_t *args)
             response = create_response(req_msg->request->proto, file_content, file_length, mime);
         }
         push_response(args->resp_queue, req_msg->connection, response);
+        free_request_msg(req_msg);
     }
 }
 
 void push_response(queue_t *q, int *connection, response_t *response)
 {
-    response_msg_t *resp_msg = malloc(sizeof(response_msg_t));
-    resp_msg->connection = connection;
-    resp_msg->response = response;
+    response_msg_t *resp_msg = create_response_msg(response, connection);
     queue_push(q, resp_msg);
-    // free_request(req_msg->request);
-    // free(req_msg);
 }
 
 ssize_t read_file(char *filepath, char *buf)

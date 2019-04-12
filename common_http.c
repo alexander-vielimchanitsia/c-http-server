@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,14 +9,20 @@
 header_t *create_header(const char *name, const char *value, header_t *next)
 {
     header_t *header = malloc(sizeof(header_t));
-    if (header == NULL)
+    if (header == NULL) {
+        printf("create_header: failed to allocate header_t");
         return NULL;
+    }
     header->name = malloc(strlen(name)+1);
-    if (header->name == NULL)
+    if (header->name == NULL) {
+        printf("create_header: failed to allocate header->name");
         return NULL;
+    }
     header->value = malloc(strlen(value)+1);
-    if (header->value == NULL)
+    if (header->value == NULL) {
+        printf("create_header: failed to allocate header->value");
         return NULL;
+    }
     strcpy(header->name, name);
     strcpy(header->value, value);
     header->next = next;
