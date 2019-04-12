@@ -1,6 +1,7 @@
 #ifndef _RESPONSE_H_
 #define _RESPONSE_H_
 
+#include "requests.h"
 #include "common_http.h"
 
 #define MAX_RESPONSE_LENGTH 65536  // 64K
@@ -17,7 +18,9 @@ typedef struct ResponseMsg {
     response_t *response;
 } response_msg_t;
 
-response_t *create_response(const char *proto, const char *body, int file_length);
+response_t *create_response(const char *proto, const char *body, int file_length, const char *mime);
+response_t *create_404_response(request_t *request);
+response_t *create_500_response(request_t *request);
 void response_to_string(response_t *response, char *buf);
 void free_response(response_t *response);
 const char *get_status_text(short int status_code);

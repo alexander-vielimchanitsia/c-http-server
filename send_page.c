@@ -27,8 +27,8 @@ void send_pages(queue_t *resp_queue)
         queue_pop(resp_queue, msg);
         send_response(*msg->connection, msg->response);
         close(*msg->connection);
-        free_response(msg->response);
-        free(msg);
+        // free_response(msg->response);
+        // free(msg);
     }
 }
 

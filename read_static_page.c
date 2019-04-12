@@ -42,31 +42,42 @@ void read_static_pages(rsp_worker_args_t *args)
     {
         queue_pop(args->rsp_queue, req_msg);
         printf("req_msg: %s\n", req_msg->request->url->path);
-        ssize_t file_length = read_file(req_msg->request->url->path, file_content);
-        if (file_length < 0)
-        {
-            printf("Failed to read file for url='%s'\n", req_msg->request->url->path);
-            // TODO: send 500 status instead
-            close(*req_msg->connection);
+
+        // get filepath
+        char filepath[strlen(TEMPLATES) + strlen(req_msg->request->url->path) + 1];
+        path_combine(filepath, TEMPLATES, req_msg->request->url->path);
+
+        // does this file exist?
+        if (access(filepath, F_OK) < 0) {
+            response = create_404_response(req_msg->request);
+            push_response(args->resp_queue, req_msg->connection, response);
             continue;
         }
-        response = create_response(req_msg->request->proto, file_content, file_length);
-        resp_msg = malloc(sizeof(response_msg_t));
-        resp_msg->connection = req_msg->connection;
-        resp_msg->response = response;
-        queue_push(args->resp_queue, resp_msg);
-        free_request(req_msg->request);
-        free(req_msg);
+
+        ssize_t file_length = read_file(filepath, file_content);
+        if (file_length < 0)
+            response = create_500_response(req_msg->request);
+        else {
+            char *mime = get_mime_type(filepath);
+            response = create_response(req_msg->request->proto, file_content, file_length, mime);
+        }
+        push_response(args->resp_queue, req_msg->connection, response);
     }
 }
 
-ssize_t read_file(char *url_path, char *buf)
+void push_response(queue_t *q, int *connection, response_t *response)
 {
-    // get the file path
-    char file_path[strlen(TEMPLATES) + strlen(url_path) + 1];
-    path_combine(file_path, TEMPLATES, url_path);
-    // read the file
-    int file = open(file_path, O_RDONLY);
+    response_msg_t *resp_msg = malloc(sizeof(response_msg_t));
+    resp_msg->connection = connection;
+    resp_msg->response = response;
+    queue_push(q, resp_msg);
+    // free_request(req_msg->request);
+    // free(req_msg);
+}
+
+ssize_t read_file(char *filepath, char *buf)
+{
+    int file = open(filepath, O_RDONLY);
     ssize_t bytes_read = read(file, buf, MAX_FILE_LENGTH);
     close(file);
     return bytes_read;

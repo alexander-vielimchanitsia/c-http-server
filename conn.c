@@ -24,6 +24,12 @@ void setup_conn(queue_t *queue)
         exit(EXIT_FAILURE);
     }
 
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
+    {
+        perror("Failed to set SO_REUSEADDR");
+        exit(EXIT_FAILURE);
+    }
+
     // address init
     struct sockaddr_in address;
     int addrlen = sizeof(address);

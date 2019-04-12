@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <string.h>
 #include "utils.h"
 
@@ -35,4 +36,20 @@ void itoa(int n, char *s)
         s[i++] = '-';
     s[i] = '\0';
     reverse(s);
+}
+
+
+void strlower(char *s)
+{
+    for (char *p = s; *p != '\0'; p++)
+        *p = tolower(*p);
+}
+
+
+char *get_file_ext(const char *filename)
+{
+    char *ext = strrchr(filename, '.');
+    if (!ext)
+        return "";
+    return ++ext;
 }

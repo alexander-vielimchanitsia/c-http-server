@@ -43,7 +43,7 @@ void handle_connection(req_worker_args_t *args)
         queue_pop(args->conn_queue, connection);
         printf("got a connection: %d\n", *connection);
         read_stream(*connection, request_buf);
-        printf("request: %s\n", request_buf);
+        printf("request(%d): %s\n", *connection, request_buf);
         request_t *request = parse_request(request_buf);
         if (request) {
             // TODO: try to get the page from the cache
@@ -53,8 +53,10 @@ void handle_connection(req_worker_args_t *args)
             msg->request = request;
             // TODO: push to gdp_queue for dynamic pages
             queue_push(args->rsp_queue, msg);
-        } else
+        } else {
+            printf("Failed to parse request(%d)", *connection);
             close(*connection);
+        }
     }
 }
 
